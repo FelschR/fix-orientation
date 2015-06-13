@@ -1,4 +1,3 @@
-var process = require('process');
 var exif = require('exif-component');
 var toArray = require('data-uri-to-u8');
 var rotate = require('rotate-component');
