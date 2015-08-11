@@ -13,9 +13,9 @@
   },
   "dependencies": {
     "png-size": "~0.1.0",
-    "jpeg-size": "0.0.1",
+    "jpeg-size": "~0.0.1",
     "data-uri-to-u8": "~1.0.0",
-    "exif-component": "0.0.2",
+    "exif-component": "~1.0.1",
     "rotate-component": "~1.0.0"
   },
   "devDependencies": {
