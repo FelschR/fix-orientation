@@ -1,4 +1,3 @@
-var process = require('process');
 var exif = require('exif-component');
 var toArray = require('data-uri-to-u8');
 var rotate = require('rotate-component');
@@ -27,9 +26,7 @@ function fixOrientation (url, opts, fn) {
     || tags.Orientation.value == 8);
 
   if (!toRotate) {
-    process.nextTick(function () {
-      fn(url, opts.image && urlToImage(url));
-    });
+    fn(url, opts.image && urlToImage(url));
     return;
   }
 
