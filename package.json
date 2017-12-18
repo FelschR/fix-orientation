@@ -12,11 +12,9 @@
     "start": "node example/server.js"
   },
   "dependencies": {
-    "b64-to-blob": "^1.2.19",
+    "exif-reader": "^1.0.2",
     "png-size": "~0.1.0",
     "jpeg-size": "~0.0.1",
-    "data-uri-to-u8": "~1.0.0",
-    "exif-component": "~1.0.1",
     "rotate-component": "~1.0.0"
   },
   "devDependencies": {
