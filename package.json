@@ -12,7 +12,7 @@
     "start": "node example/server.js"
   },
   "dependencies": {
-    "exif-js": "^2.3.0",
+    "@fengyuanchen/exif": "^0.1.1",
     "png-size": "~0.1.0",
     "jpeg-size": "~0.0.1",
     "rotate-component": "~1.0.0"
