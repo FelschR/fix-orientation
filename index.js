@@ -1,8 +1,8 @@
+var b64toBlob = require('b64-to-blob');
 var exif = require('exif-component');
 var toArray = require('data-uri-to-u8');
 var rotate = require('rotate-component');
 var resize = require('./lib/resize');
-var urlToImage = require('./lib/url-to-image');
 var size = {
   'image/png': require('png-size'),
   'image/jpeg': require('jpeg-size')
@@ -10,7 +10,7 @@ var size = {
 
 module.exports = fixOrientation;
 
-function fixOrientation (url, opts, fn) {
+async function fixOrientation (url, opts) {
   if (typeof opts == 'function') {
     fn = opts;
     opts = {};
@@ -27,8 +27,7 @@ function fixOrientation (url, opts, fn) {
   var toRotate = orientation && (orientation == 6 || orientatino == 8);
 
   if (!toRotate) {
-    fn(url, opts.image && urlToImage(url));
-    return;
+    return url;
   }
 
   var s = size[buf.type](buf);
@@ -42,23 +41,29 @@ function fixOrientation (url, opts, fn) {
 
   rotate(ctx, { x: half, y: half, degrees: dir * 90 });
 
-  urlToImage(url, function (img) {
-    if (dir == 1) {
-      ctx.drawImage(img, 0, max - s.height);
-    } else {
-      ctx.drawImage(img, max - s.width, 0);
-    }
+  const img = await dataUrlToBitmap(url);
 
-    rotate(ctx, { x: half, y: half, degrees: -1 * dir * 90 });
-    resize(canvas, {
-      width: s.height,
-      height: s.width
-    });
+  if (dir == 1) {
+    ctx.drawImage(img, 0, max - s.height);
+  } else {
+    ctx.drawImage(img, max - s.width, 0);
+  }
 
-    var url = buf.type == 'image/png'
-      ? canvas.toDataURL()
-      : canvas.toDataURL('image/jpeg', 1);
-    fn(url, opts.image && urlToImage(url));
+  rotate(ctx, { x: half, y: half, degrees: -1 * dir * 90 });
+  resize(canvas, {
+    width: s.height,
+    height: s.width
   });
+
+  var url = buf.type == 'image/png'
+    ? canvas.toDataURL()
+    : canvas.toDataURL('image/jpeg', 1);
+  return url;
 }
 
+async function dataUrlToBitmap(dataUrl) {
+  var base64 = dataURI.split(',')[1];
+  var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+  var blob = b64toBlob(base64);
+  return await createImageBitmap(blob);
+}
