@@ -20,10 +20,11 @@ function fixOrientation (url, opts, fn) {
   var tags = {};
   try { tags = exif(buf.buffer) } catch (err) {}
 
-  var toRotate = tags.Orientation
-    && typeof tags.Orientation.value == 'number'
-    && (tags.Orientation.value == 6
-    || tags.Orientation.value == 8);
+  var orientation = tags.Orientation
+                        ? tags.Orientation.value
+                        : tags.orientation == 'right-top' ? 6 : tags.orientation == 'left-bottom' ? 8 : undefined;
+
+  var toRotate = orientation && (orientation == 6 || orientatino == 8);
 
   if (!toRotate) {
     fn(url, opts.image && urlToImage(url));
@@ -33,7 +34,7 @@ function fixOrientation (url, opts, fn) {
   var s = size[buf.type](buf);
   var max = Math.max(s.width, s.height);
   var half = max / 2;
-  var dir = { 6: 1, 8: -1 }[tags.Orientation.value];
+  var dir = { 6: 1, 8: -1 }[orientation];
 
   var canvas = document.createElement('canvas');
   var ctx = canvas.getContext('2d');
