@@ -12,7 +12,7 @@
     "start": "node example/server.js"
   },
   "dependencies": {
-    "exif-reader": "^1.0.2",
+    "exif": "^0.6.0",
     "png-size": "~0.1.0",
     "jpeg-size": "~0.0.1",
     "rotate-component": "~1.0.0"
