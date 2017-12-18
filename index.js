@@ -1,6 +1,4 @@
-var b64toBlob = require('b64-to-blob');
-var exif = require('exif-component');
-var toArray = require('data-uri-to-u8');
+var exif = require('exif-reader');
 var rotate = require('rotate-component');
 var resize = require('./lib/resize');
 var size = {
@@ -10,24 +8,32 @@ var size = {
 
 module.exports = fixOrientation;
 
-async function fixOrientation (url, opts) {
+async function fixOrientation (blob, opts) {
+  console.log(new Date().toISOString() + ": fixing orientation...");
   if (typeof opts == 'function') {
     fn = opts;
     opts = {};
   }
 
-  var buf = toArray(url);
-  var tags = {};
-  try { tags = exif(buf.buffer) } catch (err) {}
+  const buf = await new Promise((resolve, reject) => {
+    var fr = new FileReader();
+    fr.onload = () => {
+      resolve(fr.result);
+    };
+    fr.readAsArrayBuffer(blob);
+  });
 
-  var orientation = tags.Orientation
-                        ? tags.Orientation.value
-                        : tags.orientation == 'right-top' ? 6 : tags.orientation == 'left-bottom' ? 8 : undefined;
+  var tags = {};
+  try { tags = exif(buf) } catch (err) {
+      console.warn("could not read EXIF data:\n" + err);
+  }
+
+  var orientation = tags.image.Orientation ? tags.Orientation.value : undefined;
 
   var toRotate = orientation && (orientation == 6 || orientatino == 8);
 
   if (!toRotate) {
-    return url;
+    return blob;
   }
 
   var s = size[buf.type](buf);
@@ -41,7 +47,9 @@ async function fixOrientation (url, opts) {
 
   rotate(ctx, { x: half, y: half, degrees: dir * 90 });
 
-  const img = await dataUrlToBitmap(url);
+  console.log(new Date().toISOString() + ": converting Blob to ImageBitmap...");
+  const img = await createImageBitmap(blob);
+  console.log(new Date().toISOString() + ": Bitmap conversion done; drawing image to canvas...");
 
   if (dir == 1) {
     ctx.drawImage(img, 0, max - s.height);
@@ -49,21 +57,16 @@ async function fixOrientation (url, opts) {
     ctx.drawImage(img, max - s.width, 0);
   }
 
+  console.log(new Date().toISOString() + ": Rotating canvas...");
   rotate(ctx, { x: half, y: half, degrees: -1 * dir * 90 });
+  console.log(new Date().toISOString() + ": Resizing canvas...");
   resize(canvas, {
     width: s.height,
     height: s.width
   });
 
-  var url = buf.type == 'image/png'
-    ? canvas.toDataURL()
-    : canvas.toDataURL('image/jpeg', 1);
-  return url;
-}
-
-async function dataUrlToBitmap(dataUrl) {
-  var base64 = dataURI.split(',')[1];
-  var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-  var blob = b64toBlob(base64);
-  return await createImageBitmap(blob);
+  console.log(new Date().toISOString() + ": Canvas to Blob...");
+  var resultBlob = canvas.toBlob();
+  console.log(new Date().toISOString() + ": rotation done! returning results...");
+  return resultBlob;
 }
