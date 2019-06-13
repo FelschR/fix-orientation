@@ -15,15 +15,6 @@ async function fixOrientation (blob, opts) {
     opts = {};
   }
 
-  const arrayBuffer = await new Promise((resolve, reject) => {
-    var fr = new FileReader();
-    fr.onload = () => {
-      resolve(fr.result);
-    };
-    fr.readAsArrayBuffer(blob);
-  });
-  const buf = new Uint8Array(arrayBuffer);
-
   const exifData = await new Promise((resolve, reject) => {
     const exif = new Exif(blob, {
       done: (data) => {
